@@ -21,9 +21,9 @@
 
 ### Уроки
 
-Ссылки на лекции: Below are links to the lessons and suggested schedules:
+Ссылки на лекции:
 
-* [Click here for schedule using Salmon count matrix](https://hbctraining.github.io/DGE_workshop_salmon/schedule/)
+* [Click here for schedule using Salmon count matrix](./lessons/01_DGE_setup_and_overview.md)
 * [Click here for schedule using FeatureCounts count matrix](schedule/1.5-day.md)
 
 
