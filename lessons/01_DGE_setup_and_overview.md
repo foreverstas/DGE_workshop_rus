@@ -32,17 +32,17 @@ date: "May 12, 2017"
 
 ## Описание набора данных
 
-We will be using the full count matrix from the RNA-Seq dataset that is part of a larger study described in [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849).
+Мы будем использовать общую числовую матрицу (count matrix) из набора данных RNA-Seq, который является частью более крупного исследования, описанного в статье [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849).
 
-The RNA-Seq was performed on HEK293F cells that were either transfected with a MOV10 transgene, or siRNA to knock down Mov10 expression, or non-specific (irrelevant) siRNA. This resulted in 3 conditions **Mov10 oe** (over expression), **Mov10 kd** (knock down) and **Irrelevant kd**, respectively. The number of replicates is as shown below.
+Исследование RNA-Seq проводилось на клетках HEK293F, которые были трансфицированы либо трансгеном MOV10, либо малой интерферирующей РНК (siRNA) для нокдауна Mov10, либо неспецифической (нерелевантной) siRNA. В результате были получены 3 состояния (condition) **Mov10 oe** (избыточная экспрессия), **Mov10 kd** (нокдаун) и **Irrelevant kd**, соответственно. Число реплик указано ниже.
 
-Using these data, we will evaluate transcriptional patterns associated with perturbation of MOV10 expression. Please note that the irrelevant siRNA will be treated as our control condition.
+С помощью этих данных мы оценим транскрипционные паттерны, связанные с нарушением экспрессии MOV10. Обратите внимание, что нерелевантная siRNA будет рассматриваться в качестве контрольного состояния.
 
 <img src="../img/dataset.png" width="400">
 
 
 
-***What is the purpose of these datasets? What does Mov10 do?***
+***Каково назначение этих датасетов? Какое действие оказывает Mov10?***
 
 Авторы исследуют взаимодействия между различными генами, вовлеченными в формирование [синдрома ломкой X-хромосомы](https://ru.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D0%B4%D1%80%D0%BE%D0%BC_%D0%9C%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%E2%80%94_%D0%91%D0%B5%D0%BB%D0%BB) -- болезни, для которой характерна аберрантная продукция белка FMRP.
 
@@ -55,25 +55,26 @@ Using these data, we will evaluate transcriptional patterns associated with pert
 
 <img src="../img/mov10-model.png" width="400">
 
-**Our questions:**
-* What patterns of expression can we identify with the loss or gain of MOV10?
-* Are there any genes shared between the two conditions?
+**Наши вопросы:**
+* Какие паттерны экспрессии мы можем идентифицировать в связи с потерей или приростом MOV10?
+* Есть ли общие гены для этих двух состояний?
 
-## Setting up
+## Установка
 
-Before we get into the details of the analysis, let's get started by opening up RStudio and setting up a new project for this analysis.
+Прежде чем перейти к деталям анализа, давайте начнем с запуска RStudio и создания нового проекта для нашего анализа.
 
-1. Go to the `File` menu and select `New Project`.
-2. In the `New Project` window, choose `New Directory`. Then, choose `Empty Project`. Name your new directory `DEanalysis` and then "Create the project as subdirectory of:" the Desktop (or location of your choice).
-3. The new project should automatically open in RStudio.
+1. Перейдите в меню `File` и выберите `New Project`.
+2. В окне `New Project` выберите `New Directory`. Затем выберите `Empty Project`. Назовите новый каталог `DEanalysis`, а затем "Create the project as subdirectory of:" на Рабочем столе (или в выбранном вами месте).
+3. Новый проект должен автоматически открыться в RStudio.
 
-To check whether or not you are in the correct working directory, use `getwd()`. The path `Desktop/DEanalysis` should be returned to you in the console. Within your working directory use the `New folder` button in the bottom right panel to create three new directories: `data`, `meta` and `results`. Remember the key to a good analysis is keeping organized from the start!
+Чтобы проверить, находитесь ли вы в правильном рабочем каталоге, используйте `getwd()`. В консоли должен появиться путь `Desktop/DEanalysis`. В рабочей директории используйте кнопку `Новая папка` в правой нижней панели, чтобы создать три новые директории: `data`, `meta` и `results`. Помните, что ключ к хорошему анализу - это организованность с самого начала!
 
-Go to the `File` menu and select `New File`, then select `R Script`. This should open up a script editor in the top left hand corner. This is where we will be typing and saving all commands required for this analysis. In the script editor type in header lines:
+Перейдите в меню `File` и выберите `New File`, затем выберите `R Script`. В левом верхнем углу откроется редактор скриптов. Именно здесь мы будем вводить и сохранять все команды, необходимые для данного анализа. В редакторе скриптов введите строки заголовков:
 
 ```
 ## Gene-level differential expression analysis using DESeq2
 ```
+> **NOTE:** В зависимости от настроек операционной системы редактор скриптов Rstudio может некорректно воспринимать рускоязычные символы. Нужно быть внимательным, поскольку при последующем открытии скриптов текстовый редактор может неправильно воспроизводить русские символы*
 
 Now save the file as `de_script.R`. When finished your working directory should now look similar to this:
 
