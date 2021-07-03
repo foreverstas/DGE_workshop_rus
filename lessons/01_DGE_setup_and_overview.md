@@ -44,13 +44,14 @@ Using these data, we will evaluate transcriptional patterns associated with pert
 
 ***What is the purpose of these datasets? What does Mov10 do?***
 
-The authors are investigating interactions between various genes involved in Fragile X syndrome, a disease in which there is aberrant production of the FMRP protein.
+Авторы исследуют взаимодействия между различными генами, вовлеченными в формирование [синдрома ломкой X-хромосомы](https://ru.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D0%B4%D1%80%D0%BE%D0%BC_%D0%9C%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%E2%80%94_%D0%91%D0%B5%D0%BB%D0%BB) -- болезни, для которой характерна аберрантная продукция белка FMRP.
 
-> **FMRP** is “most commonly found in the brain, is essential for normal cognitive development and female reproductive function. Mutations of this gene can lead to fragile X syndrome, mental retardation, premature ovarian failure, autism, Parkinson's disease, developmental delays and other cognitive deficits.” - from [wikipedia](https://en.wikipedia.org/wiki/FMR1)
+>**FMRP** «чаще всего обнаруживается в головном мозге, он необходим для нормального умственного развития и женской репродуктивной функции. Мутации в этом гене могут привести к синдрому ломкой Х-хромосомы, умственной отсталости, преждевременной недостаточности яичников, аутизму, болезни Паркинсона, задержке развития и другим когнитивным нарушениям». - из [википедии](https://en.wikipedia.org/wiki/FMR1)
 
-> **MOV10**, is a putative RNA helicase that is also associated with **FMRP** in the context of the microRNA pathway.
 
-**The hypothesis [the paper](http://www.ncbi.nlm.nih.gov/pubmed/25464849) is testing is that FMRP and MOV10 associate and regulate the translation of a subset of RNAs.**
+> **MOV10** - это предполагаемая РНК-геликаза, ассоциированная с **FMRP** в контексте регуляции с помощью микроРНК.
+
+**[В статье](http://www.ncbi.nlm.nih.gov/pubmed/25464849) проверяется гипотеза о том, что FMRP и MOV10 связывают и регулируют трансляцию подмножества РНК**.
 
 <img src="../img/mov10-model.png" width="400">
 
