@@ -40,8 +40,6 @@ date: "May 12, 2017"
 
 <img src="../img/dataset.png" width="400">
 
-
-
 ***Каково назначение этих датасетов? Какое действие оказывает Mov10?***
 
 Авторы исследуют взаимодействия между различными генами, вовлеченными в формирование [синдрома ломкой X-хромосомы](https://ru.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D0%B4%D1%80%D0%BE%D0%BC_%D0%9C%D0%B0%D1%80%D1%82%D0%B8%D0%BD%D0%B0_%E2%80%94_%D0%91%D0%B5%D0%BB%D0%BB) -- болезни, для которой характерна аберрантная продукция белка FMRP.
@@ -127,12 +125,12 @@ View(meta)
 View(data)
 ```
 
-> ### Using the abundance estimates from Salmon as input to DESeq2
-> The counts used in these lessons were generated using the standard approach for RNA-seq analysis, where samples were aligned to the genome using a splice-aware aligner followed by counting. If you are using lightweight algorithms such as Salmon, Sailfish or Kallisto to generate abundance estimates, you can also use DESeq2 to perform gene-level differential expression analysis. These transcript abundance estimates, often referred to as ‘pseudocounts’, can be converted for use with DESeq2 but the setup is slightly more involved. If you are interested in knowing more about using Salmon pseudocounts for DESeq2, we have [materials linked here](https://hbctraining.github.io/DGE_workshop_salmon/lessons/01_DGE_setup_and_overview.html).
+> ### Использование оценок представленности _(abundance estimates)_ из Salmon в качестве входных данных для DESeq2
+> Целочисленные показатели, каунты _(counts)_, используемые в этих уроках, были получены с помощью стандартного для анализа RNA-seq подхода, когда образцы выравниваются на геном с помощью алгоритма выравнивания с учетом сплайсинга и затем подсчитываются. Если вы используете облегченные алгоритмы, такие как Salmon, Sailfish или Kallisto для получения оценок избыточности, вы также можете использовать DESeq2 для проведения анализа дифференциальной экспрессии на уровне генов. Эти оценки представленности транскриптов, часто называемые "псевдокаунтами" _(pseudocounts)_, могут быть преобразованы для использования в DESeq2, но их настройка несколько сложнее. Если вы хотите узнать больше об использовании псевдокаунтов Salmon для DESeq2, у нас есть [материалы по ссылке] (https://hbctraining.github.io/DGE_workshop_salmon/lessons/01_DGE_setup_and_overview.html).
 
 ## Обзор анализа дифференциальной экспрессии
 
-Что же на самом деле представляют собой эти числовые данные _(count data)_? Числовые показатели _(counts)_, используемые для анализа дифференциальной экспрессии, представляют собой количество прочтений _(reads)_ для последовательностей, относящихся к определенному гену. Чем выше значение показателя, тем больше прочтений связано с этим геном, и тем выше уровень экспрессии этого гена в образце.
+Что же на самом деле представляют собой эти целочисленные данные _(count data)_? Целочисленные показатели, каунты _(counts)_, используемые для анализа дифференциальной экспрессии, представляют собой количество прочтений _(reads)_ для последовательностей, полученных в ходе секвенирования и относящихся к определенному гену. Чем выше значение каунта, тем больше прочтений связано с этим геном, и тем выше уровень экспрессии этого гена в образце.
 
 <img src="../img/deseq_counts_overview.png" width="600">
 
@@ -145,21 +143,23 @@ View(data)
 
 <img src="../img/foldchange_heatmap.png" width="200">
 
-More often than not, there is much more going on with your data than what you are anticipating. Genes that vary in expression level between samples is a consequence of not only the experimental variables of interest but also due to extraneous sources. The goal of differential expression analysis to determine the relative role of these effects, and to separate the “interesting” from the “uninteresting”.
+Чаще всего с вашими данными происходит гораздо больше, чем вы предполагаете. Гены, которые различаются по уровню экспрессии между образцами, являются результатом не только экспериментальных переменных _(variables)_, представляющих интерес, но и посторонних источников. Цель анализа дифференциальной экспрессии - определить относительную роль таких эффектов _(effects)_ и отделить "интересное" от "неинтересного".
 
 <img src="../img/de_variation.png" width="500">
 
-The "uninteresting" presents as sources of variation in your data, and so even though the mean expression levels between sample groups may appear to be quite different, it is possible that the difference is not actually significant. This is illustrated for 'GeneA' expression between 'untreated' and 'treated' groups in the figure below. The mean expression level of geneA for the 'treated' group is twice as large as for the 'untreated' group, but the variation between replicates indicates that this may not be a significant difference. **We need to take into account the variation in the data (and where it might be coming from) when determining whether genes are differentially expressed.**
+
+"Неинтересное" представляет собой источники разброса _(variation)_ в ваших данных, и поэтому даже если средние уровни экспрессии между группами образцов могут казаться совершенно разными, возможно, что на самом деле разница не является значительной. Это показано на рисунке ниже для экспрессии генаА _(GeneA)_ между группами "без обработки" и "с обработкой". Средний уровень экспрессии генаА для "обработанной" группы в два раза больше, чем для "необработанной" группы, но разброс между репликами указывает на то, что это не является существенным различием. **При определении того, являются ли гены дифференциально экспрессируемыми, необходимо учитывать разброс в данных (и откуда он может взяться).**
+
 
 <img src="../img/de_norm_counts_var.png" width="400">
 
 
-The goal of differential expression analysis is to determine, for each gene, whether the differences in expression (counts) **between groups** is significant given the amount of variation observed **within groups** (replicates). To test for significance, we need an appropriate statistical model that accurately performs normalization (to account for differences in sequencing depth, etc.) and variance modeling (to account for few numbers of replicates and large dynamic expression range).
+Цель анализа дифференциальной экспрессии - определить для каждого гена, является ли разница в экспрессии (каунтах) **между группами** достоверной _(significant)_, учитывая величину разброса _(amount of variation)_, наблюдаемых **в группах** (между повторами). Для проверки достоверности необходима соответствующая [статистическая модель](https://r-analytics.blogspot.com/2014/03/blog-post.html) _(model)_, которая точно выполняет нормализацию _(normalization)_ (для учета различий в глубине секвенирования и т.д.) и моделирование [дисперсии](https://ru.wikipedia.org/wiki/%D0%94%D0%B8%D1%81%D0%BF%D0%B5%D1%80%D1%81%D0%B8%D1%8F_%D1%81%D0%BB%D1%83%D1%87%D0%B0%D0%B9%D0%BD%D0%BE%D0%B9_%D0%B2%D0%B5%D0%BB%D0%B8%D1%87%D0%B8%D0%BD%D1%8B) _(variance)_ (для учета небольшого числа биологических повторов и большого динамического диапазона экспрессии).
 
 
-### RNA-seq count distribution
+### Распределение каунтов RNA-seq
 
-To determine the appropriate statistical model, we need information about the distribution of counts. To get an idea about how RNA-seq counts are distributed, let's plot the counts for a single sample, 'Mov10_oe_1':
+Чтобы определить подходящую статистическую модель, нам нужна информация о распределении каунтов. Чтобы получить представление о том, как распределяются каунты RNA-seq, давайте построим гистограмму распределения каунтов для одного образца, 'Mov10_oe_1':
 
 ```r
 ggplot(data) +
@@ -170,7 +170,7 @@ ggplot(data) +
 
 <img src="../img/deseq_counts_distribution.png" width="400">
 
-If we zoom in close to zero, we can see a large number of genes with counts of zero:
+Если увеличить масштаб изображения вблизи нуля, то можно увидеть большое количество генов с нулевым значением каунтов:
 
 ```r
 ggplot(data) +
@@ -182,38 +182,38 @@ ggplot(data) +
 
 <img src="../img/deseq_counts_distribution_zoomed.png" width="400">
 
-These images illustrate some common features of RNA-seq count data, including a **low number of counts associated with a large proportion of genes**, and a long right tail due to the **lack of any upper limit for expression**. Unlike microarray data, which has a dynamic range maximum limited due to when the probes max out, there is no limit of maximum expression for RNA-seq data. Due to the differences in these technologies, the statistical models used to fit the data are different between the two methods.
+Эти изображения иллюстрируют некоторые общие свойства целочисленных данных RNA-seq: во-первых, **большая фракция генов ассоциирована с низким значением каунтов**, во-вторых, имеется длинный правый хвост из-за **отсутствия какого-либо верхнего предела экспрессии**. В отличие от [микрочиповых данных](https://ru.wikipedia.org/wiki/%D0%94%D0%9D%D0%9A-%D0%BC%D0%B8%D0%BA%D1%80%D0%BE%D1%87%D0%B8%D0%BF), для которых максимальный динамический диапазон ограничивается моментом когда заканчиваются зонды, у данных РНК-секвенирования нет верхней границы экспрессии. Из-за различий в этих технологиях статистические модели, используемые для подгонки данных, различаются между двумя методами.
 
-> **NOTE:** The log intensities of the microarray data approximate a normal distribution. However, due to the different properties of the of RNA-seq count data, such as integer counts instead of continuous measurements and non-normally distributed data, the normal distribution does not accurately model RNA-seq counts [[1](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3541212/)].
+> **NOTE:** Логарифм интенсивности микрочиповых данных приблизительно соответствует нормальному распределению. Однако поскольку каунты RNA-seq представляют собой набор целых чисел с ненормальным распределением, а в микрочипах интенсивность распределена нормально и непрерывно, то нормальное распределение не может точно моделировать каунты RNA-seq [[1](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3541212/)].
 
-### Modeling count data
+### Моделирование числовых данных
 
-Count data is often modeled using the **binomial distribution**, which can give you the **probability of getting a number of heads upon tossing a coin a number of times**. However, not all count data can be fit with the binomial distribution. The binomial is based on discrete events and used in situations when you have a certain number of cases.
+Целочисленные данные часто моделируются с помощью **[биномиального распределения](https://www.youtube.com/watch?v=kkgE50r6kIM)**, которое дает **вероятность того, что монетка при заданном количестве подбрасываний монетка выпадет орлом вверх определенное число раз**. Однако не все целочисленные данные могут быть подогнаны под биномиальное распределение. Биномиальное распределение _(binomial distribution, binomial)_ описывает дискретные _(discrete)_ события _(events)_ и используется в ситуациях, когда у вас имеется определенное количество наблюдений _(cases)_.
 
-When **the number of cases is very large (i.e. people who buy lottery tickets), but the probability of an event is very small (probability of winning)**, the **Poisson distribution** is used to model these types of count data. The Poisson is similar to the binomial, but is based on continuous events. [Details provided by Rafael Irizarry in the EdX class.](https://youtu.be/fxtB8c3u6l8)
+Когда **число наблюдений очень велико (например, когда люди покупают лотерейные билеты), но вероятность события очень мала (вероятность победить в лотерее)**, для моделирования целочисленных данных используется **[распределение Пуассона](https://habr.com/ru/post/318150/) _(Poisson distribution, Poisson)_**. Пуассоновское распределение схоже с биномиальным, но описывает непрерывные _(continuous)_события. [Подробности предоставлены Рафаэлем Иризарри Rafael Irizarry in the EdX class](https://youtu.be/fxtB8c3u6l8).
 
-**With RNA-Seq data, a very large number of RNAs are represented and the probability of pulling out a particular transcript is very small**. Thus, it would be an appropriate situation to use the Poisson distribution. However, a unique property of this distribution is that the mean == variance. Realistically, with RNA-Seq data there is always some biological variation present across the replicates (within a sample class). Genes with larger average expression levels will tend to have larger observed variances across replicates.
+**В данных RNA-Seq представлено очень большое количество РНК, и вероятность обнаружения конкретного транскрипта очень мала**. Таким образом, в данной ситуации было бы уместно использовать распределение Пуассона. Однако уникальным свойством этого распределения является то, что среднее == дисперсии. В реальности, в данных RNA-Seq всегда присутствует некоторая биологическая вариация между повторами (среди образцов, принадлежащих одному классу, _(sample class)_). Гены с большим средним уровнем экспрессии будут иметь более высокую наблюдаемую дисперсию между повторами.
 
-If the proportions of mRNA stayed exactly constant between the biological replicates for each sample class, we could expect Poisson distribution (where mean == variance). [A nice description of this concept is presented by Rafael Irizarry in the EdX class](https://youtu.be/HK7WKsL3c2w). But this doesn't happen in practice, and so the Poisson distribution is only  considered appropriate for a single biological sample.
+Если бы соотношение между разными мРНК оставалось абсолютно постоянным между биологическими повторами для каждого класса образцов, мы могли бы ожидать распределения Пуассона (где среднее == дисперсия). [Хорошее описание этой концепции представлено Рафаэлем Иризарри в EdX class](https://youtu.be/HK7WKsL3c2w). Но на практике этого не происходит, и поэтому распределение Пуассона считается подходящим только для одного биологического образца.
 
-The model that fits best, given this type of variability between replicates, is the Negative Binomial (NB) model. Essentially, **the NB model is a good approximation for data where the mean < variance**, as is the case with RNA-Seq count data.
+Модель, которая лучше всего описывает данные при таком типе изменчивости _(variability)_ между повторами - это отрицательная биномиальная модель _(Negative Binomial, NB)_. По сути, **модель NB является хорошим приближением _(approximation)_ для данных, где среднее значение < дисперсии**, как в случае с целочисленными данными RNA-Seq.
 
 <img src="../img/deseq_nb.png" width="400">
 
 
 >**NOTE:**
 >
-> - **Biological replicates** represent multiple samples (i.e. RNA from different mice) representing the same sample class
-> - **Technical replicates** represent the same sample (i.e. RNA from the same mouse) but with technical steps replicated
-> - Usually biological variance is much greater than technical variance, so we do not need to account for technical variance to identify biological differences in expression
-> - **Don't spend money on technical replicates - biological replicates are much more useful**
+> - **Биологические _(_(biological replicates)_)_** представляют собой несколько образцов (т.е. РНК от разных мышей), входящих в один класс образцов.
+> - **Технические реплики _(_(technical replicates)_)_** представляют собой один и тот же образец (т.е. РНК от одной и той же мыши), но с повторением технических этапов.
+> - Обычно биологическая дисперсия намного больше технической дисперсии, поэтому нам не нужно учитывать техническую дисперсию для выявления биологических различий в экспрессии.
+> - **Не тратьте деньги на технические повторы - биологические повторы _(biological replicates)_ гораздо полезнее**
 
 >**NOTE:**
-> If you are using **cell lines** and are unsure whether or not you have prepared biological or technical replicates, take a look at [this link](https://web.archive.org/web/20170807192514/http://www.labstats.net:80/articles/cell_culture_n.html). This is a useful resource in helping you determine how best to set up your *in-vitro* experiment.
+> Если вы используете **клеточные линии** и не уверены, подготовили ли вы биологические или технические реплики, взгляните на [эту ссылку](https://web.archive.org/web/20170807192514/http://www.labstats.net:80/articles/cell_culture_n.html). Это полезный ресурс, который поможет вам определить, как лучше поставить эксперимент *in-vitro*.
 
-#### How do I know if my data should be modeled using the Poisson distribution or Negative Binomial distribution?
+#### Как узнать, следует ли моделировать мои данные с помощью распределения Пуассона или отрицательного биномиального распределения?
 
-If it's count data, it should fit the negative binomial, as discussed previously. However, it can be helpful to plot the *mean versus the variance* of your data. *Remember for the Poisson model, mean = variance, but for NB, mean < variance.*
+Если это целочисленные данные, то они должны соответствовать отрицательному биномиальному распределению, как обсуждалось ранее. Однако может быть полезно построить график зависимости *среднего значения от дисперсии* на основе ваших ваших данных.  *Помните, что для модели Пуассона среднее = дисперсии, а для NB среднее < дисперсии.*
 
 Запустите следующий код, чтобы построить график *среднее значение vs дисперсии* для повторов  'Mov10 overexpression':
 
@@ -257,7 +257,7 @@ ggplot(df) +
 ![deg1](../img/deg_methods2.png)
 
 
-**Для анализа дифференциальной экспрессии _(DE)_ мы будем использовать [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8) а этапы анализа с помощью DESeq2 показаны зеленым цветом на блок-схеме ниже.**  DESeq2 сначала нормализует числовые данные, чтобы учесть различия в размерах библиотек и составе РНК между образцами. Затем мы воспользуемся нормализованными значениями для построения некоторых графиков для контроля качества на уровне генов и образцов. Последний шаг - использование соответствующих функций из пакета DESeq2 для проведения анализа дифференциальной экспрессии.
+**Для анализа дифференциальной экспрессии _(DE)_ мы будем использовать [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8), а этапы анализа с помощью DESeq2 показаны зеленым цветом на блок-схеме ниже.**  DESeq2 сначала нормализует числовые данные, чтобы учесть различия в размерах библиотек и составе РНК между образцами. Затем мы воспользуемся нормализованными значениями для построения некоторых графиков для контроля качества на уровне генов и образцов. Последний шаг - использование соответствующих функций из пакета DESeq2 для проведения анализа дифференциальной экспрессии.
 
 <img src="../img/deseq_workflow_full_2018.png" width="500">
 
