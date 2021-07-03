@@ -34,7 +34,7 @@ date: "May 12, 2017"
 
 Мы будем использовать общую числовую матрицу (count matrix) из набора данных RNA-Seq, который является частью более крупного исследования, описанного в статье [Kenny PJ et al, Cell Rep 2014](http://www.ncbi.nlm.nih.gov/pubmed/25464849).
 
-Исследование RNA-Seq проводилось на клетках HEK293F, которые были трансфицированы либо трансгеном MOV10, либо малой интерферирующей РНК (siRNA) для нокдауна Mov10, либо неспецифической (нерелевантной) siRNA. В результате были получены 3 состояния (condition) **Mov10 oe** (избыточная экспрессия), **Mov10 kd** (нокдаун) и **Irrelevant kd**, соответственно. Число реплик указано ниже.
+Исследование RNA-Seq проводилось на клетках HEK293F, которые были трансфицированы либо трансгеном MOV10, либо [малой интерферирующей РНК](https://ru.wikipedia.org/wiki/%D0%9C%D0%B0%D0%BB%D1%8B%D0%B5_%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D1%84%D0%B5%D1%80%D0%B8%D1%80%D1%83%D1%8E%D1%89%D0%B8%D0%B5_%D0%A0%D0%9D%D0%9A) _(siRNA)_ для нокдауна Mov10, либо неспецифической (нерелевантной) siRNA. В результате были получены 3 состояния _(condition)_ **Mov10 oe** (избыточная экспрессия), **Mov10 kd** (нокдаун) и **Irrelevant kd**, соответственно. Число реплик указано ниже.
 
 С помощью этих данных мы оценим транскрипционные паттерны, связанные с нарушением экспрессии MOV10. Обратите внимание, что нерелевантная siRNA будет рассматриваться в качестве контрольного состояния.
 
@@ -69,25 +69,25 @@ date: "May 12, 2017"
 
 Чтобы проверить, находитесь ли вы в правильном рабочем каталоге, используйте `getwd()`. В консоли должен появиться путь `Desktop/DEanalysis`. В рабочей директории используйте кнопку `Новая папка` в правой нижней панели, чтобы создать три новые директории: `data`, `meta` и `results`. Помните, что ключ к хорошему анализу - это организованность с самого начала!
 
-Перейдите в меню `File` и выберите `New File`, затем выберите `R Script`. В левом верхнем углу откроется редактор скриптов. Именно здесь мы будем вводить и сохранять все команды, необходимые для данного анализа. В редакторе скриптов введите строки заголовков:
+Перейдите в меню `Файл` _(`File`)_ и выберите `Новый файл` _(`New File`)_, затем выберите `Скрипт R` _(`R Script`)_. В левом верхнем углу откроется редактор скриптов. Именно здесь мы будем вводить и сохранять все команды, необходимые для данного анализа. В редакторе скриптов введите строки заголовков:
 
-```
+```r
 ## Gene-level differential expression analysis using DESeq2
 ```
-> **NOTE:** В зависимости от настроек операционной системы редактор скриптов Rstudio может некорректно воспринимать рускоязычные символы. Нужно быть внимательным, поскольку при последующем открытии скриптов текстовый редактор может неправильно воспроизводить русские символы*
+> **NOTE:** В зависимости от настроек операционной системы редактор скриптов Rstudio может некорректно воспринимать рускоязычные символы. Нужно быть внимательным, поскольку при последующем открытии таких файлов текстовый редактор может неправильно отображать русские символы*
 
-Now save the file as `de_script.R`. When finished your working directory should now look similar to this:
+Теперь сохраните файл под именем `de_script.R`. После завершения работы ваш рабочий каталог должен выглядеть примерно так:
 
 ![setup](../img/settingup.png)
 
-Finally, we need to grab the files that we will be working with for the analysis. Right click on the links below, and choose the "Save link as ..." option to download:
+Наконец, нам нужно получить файлы, с которыми мы будем работать для анализа. Щелкните правой кнопкой мыши на ссылках ниже и выберите опцию "Сохранить ссылку как ..." _("Save link as ...")_ для загрузки:
 
-* Save the [full counts matrix](https://raw.githubusercontent.com/hbc/NGS_Data_Analysis_Course/master/sessionIII/data/Mov10_full_counts.txt) file in the `data` directory.
-* Save the [full metadata table](https://raw.githubusercontent.com/hbc/NGS_Data_Analysis_Course/master/sessionIII/data/Mov10_full_meta.txt) file in the `meta` directory.
+* Созхраните файл [full counts matrix](https://raw.githubusercontent.com/hbc/NGS_Data_Analysis_Course/master/sessionIII/data/Mov10_full_counts.txt) в директории `data`.
+* Сохраните файл [full metadata table](https://raw.githubusercontent.com/hbc/NGS_Data_Analysis_Course/master/sessionIII/data/Mov10_full_meta.txt) в директории `meta`.
 
-### Loading libraries
+### Загрузка библиотек
 
-For this analysis we will be using several R packages, some which have been installed from CRAN and others from Bioconductor. To use these packages (and the functions contained within them), we need to **load the libraries.** Add the following to your script and don't forget to comment liberally!
+Для этого анализа мы будем использовать несколько пакетов R, некоторые из которых были установлены из CRAN, а другие - из Bioconductor. Чтобы использовать эти пакеты (и содержащиеся в них функции), нам нужно **загрузить библиотеки.** Добавьте следующие строки в ваш скрипт и не забудьте оставлять подробные комментарии!
 
 ```r
 ## Setup
@@ -99,9 +99,9 @@ library(pheatmap)
 library(DEGreport)
 ```
 
-### Loading data
+### Загрузка данных
 
-To load the data into our current environment, we will be using the `read.table` function. We need to provide the path to each file and also specify arguments to let R know that we have a header (`header = T`) and the first column is our row names (`row.names =1`). By default the function expects tab-delimited files, which is what we have.
+Для загрузки данных в нашу текущую рабочую среду мы будем использовать функцию `read.table`. Нам нужно указать путь к каждому файлу, а также указать аргументы, чтобы сообщить R, что у нас есть заголовок (`header = T`), и что первый столбец - это имена наших строк (`row.names =1`). По умолчанию функция ожидает файлы с табуляцией в качестве разделителя, что мы и имеем.
 
 ```r
 ## Load in data
@@ -110,7 +110,7 @@ data <- read.table("data/Mov10_full_counts.txt", header=T, row.names=1)
 meta <- read.table("meta/Mov10_full_meta.txt", header=T, row.names=1)
 ```
 
-Use `class()` to inspect our data and make sure we are working with data frames:
+Используйте `class()` для проверки наших данных и убедитесь, что мы работаем с таблицами данных _(data frames)_:
 
 ```r
 ### Check classes of the data we just brought in
