@@ -132,15 +132,15 @@ View(data)
 
 ## Обзор анализа дифференциальной экспрессии
 
-So what does this count data actually represent? The count data used for differential expression analysis represents the number of sequence reads that originated from a particular gene. The higher the number of counts, the more reads associated with that gene, and the assumption that there was a higher level of expression of that gene in the sample.
+Что же на самом деле представляют собой эти числовые данные _(count data)_? Числовые показатели _(counts)_, используемые для анализа дифференциальной экспрессии, представляют собой количество прочтений _(reads)_ для последовательностей, относящихся к определенному гену. Чем выше значение показателя, тем больше прочтений связано с этим геном, и тем выше уровень экспрессии этого гена в образце.
 
 <img src="../img/deseq_counts_overview.png" width="600">
 
-With differential expression analysis, we are looking for genes that change in expression between two or more groups (defined in the metadata)
-- case vs. control
-- correlation of expression with some variable or clinical outcome
+С помощью анализа дифференциальной экспрессии мы ищем гены, экспрессия которых меняется между двумя или более группами (определенными в метаданных).
+- опыт против контроля
+- корреляция экспрессии с какой-либо переменной или клиническим проявлением
 
-**Why does it not work to identify differentially expressed gene by ranking the genes by how different they are between the two groups (based on fold change values)?**
+**Почему не получается определить дифференциально экспрессируемый ген, ранжируя гены по тому, насколько они отличаются между двумя группами (на основе величины диапазона изменений _([(Fold Change)](https://ru.wikipedia.org/wiki/%D0%9A%D1%80%D0%B0%D1%82%D0%BD%D0%BE%D1%81%D1%82%D1%8C_%D0%B8%D0%B7%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F))?**
 
 
 <img src="../img/foldchange_heatmap.png" width="200">
@@ -215,7 +215,7 @@ The model that fits best, given this type of variability between replicates, is 
 
 If it's count data, it should fit the negative binomial, as discussed previously. However, it can be helpful to plot the *mean versus the variance* of your data. *Remember for the Poisson model, mean = variance, but for NB, mean < variance.*
 
-Run the following code to plot the *mean versus variance* for the 'Mov10 overexpression' replicates:
+Запустите следующий код, чтобы построить график *среднее значение vs дисперсии* для повторов  'Mov10 overexpression':
 
 ```r
 mean_counts <- apply(data[, 3:5], 1, mean)
@@ -231,23 +231,25 @@ ggplot(df) +
 
 <img src="../img/deseq_mean_vs_variance.png" width="600">
 
-Note that in the above figure, the variance across replicates tends to be greater than the mean (red line), especially for genes with large mean expression levels. *This is a good indication that our data do not fit the Poisson distribution and we need to account for this increase in variance using the Negative Binomial model (i.e. Poisson will underestimate variability leading to an increase in false positive DE genes).*
+Обратите внимание, что на рисунке выше дисперсия между повторами имеет тенденцию превышать среднее значение (красная линия), особенно в случае генов с высоким средним уровнем экспрессии. *Это верный признак того, что наши данные не соответствуют распределению Пуассона, и нам необходимо учесть это увеличение дисперсии с помощью модели с негативным биномиальным распределенем (т.е. модель с Пуассоновским распределением будет недооценивать вариабельность, что приведет к увеличению числа ложноположительных DE-генов).*
 
-### Improving mean estimates (i.e. reducing variance) with biological replicates
+### Усовершенствование  оценок среднего (т.е. уменьшение дисперсии) с помощью биологических повторов
 
-The variance or scatter tends to reduce as we increase the number of biological replicates (*the distribution will approach the Poisson distribution with increasing numbers of replicates*), since standard deviations of averages are smaller than standard deviations of individual observations. **The value of additional replicates is that as you add more data (replicates), you get increasingly precise estimates of group means, and ultimately greater confidence in the ability to distinguish differences between sample classes (i.e. more DE genes).**
+Дисперсия или разброс имеет тенденцию к уменьшению по мере увеличения числа биологических реплик (*распределение будет приближаться к пуассоновскому при увеличении числа повторов*), поскольку стандартные отклонения средних меньше, чем стандартные отклонения отдельных наблюдений. **Ценность дополнительных повторов заключается в том, что по мере добавления большего количества данных (повторов) вы получаете все более точные оценки групповых средних и, в конечном счете, большую доверие (confidence) к способности выявлять различия между классами образцов (т.е. более DE-генов).**
 
-The figure below illustrates the relationship between sequencing depth and number of replicates on the number of differentially expressed genes identified [[1](https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more)]. Note that an **increase in the number of replicates tends to return more DE genes than increasing the sequencing depth**. Therefore, generally more replicates are better than higher sequencing depth, with the caveat that higher depth is required for detection of lowly expressed DE genes and for performing isoform-level differential expression. Generally, the minimum sequencing depth recommended is 20-30 million reads per sample, but we have seen good RNA-seq experiments with 10 million reads if there are a good number of replicates.
+На рисунке ниже показано влияние глубины секвенирования и числа повторов на количество выявленных дифференциально экспрессируемых генов [[1](https://academic.oup.com/bioinformatics/article/30/3/301/228651/RNA-seq-differential-expression-studies-more)]. Обратите внимание, что **увеличение числа реплик, как правило, дает больше DE-генов, чем увеличение глубины секвенирования**. Поэтому, как правило, большее количество повторов лучше, чем большая глубина секвенирования, с оговоркой, что большая глубина требуется для обнаружения слабо экспрессируемых DE-генов и для проведения дифференциальной экспрессии на уровне отдельных изоформ. Обычно рекомендуемая минимальная глубина секвенирования составляет 20-30 миллионов прочтений на образец, но мы видели хорошие эксперименты РНК-секвенирования с 10 миллионами прочтений при наличии достаточного количества повторов.
+
+Переведено с помощью www.DeepL.com/Translator (бесплатная версия)
 
 <img src="../img/de_replicates_img.png" width="500">
 
-### Differential expression analysis workflow
+### Процедура анализа дифференциальной экспрессии
 
-To model counts appropriately when performing a differential expression analysis, there are a number of software packages that have been developed for differential expression analysis of RNA-seq data. Even as new methods are continuously being developed a few  tools are generally recommended as best practice, e.g. **[DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)** and **[EdgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)**. Both these tools use the negative binomial model, employ similar methods, and typically, yield similar results. They are pretty stringent, and have a good balance between sensitivity and specificity (reducing both false positives and false negatives).
+Чтобы правильно смоделировать числовые показатели при проведении анализа дифференциальной экспрессии, существует ряд пакетов программного обеспечения, разработанных для анализа дифференциальной экспрессии данных RNA-seq. Несмотря на то, что постоянно разрабатываются новые методы, несколько инструментов обычно рекомендуются в качестве наиболее эффективных, например: **[DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)** и **[EdgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)**. Оба инструмента используют отрицательную биномиальную модель, применяют схожие методы и, как правило, дают схожие результаты. Они довольно строгие и имеют хороший баланс между чувствительностью _(sensitivity)_ и специфичностью _(specificity)_ (сниженное количество как ложноположительных и ложноотрицательных результатов).
 
-**[Limma-Voom](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2014-15-2-r29)** is another set of tools often used together for DE analysis, but this method may be less sensitive for small sample sizes. This method is recommended when the number of biological replicates per group grows large (> 20).
+**[Limma-Voom](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2014-15-2-r29)** еще один набор инструментов, часто используемых вместе для анализа DE, но этот метод может быть менее чувствительным при малых объемах выборки. Этот метод рекомендуется использовать, когда число биологических повторов на группу становится большим (> 20).
 
-Many studies describing comparisons between these methods show that while there is some agreement, there is also much variability between tools. **Additionally, there is no one method that performs optimally under all conditions ([Soneson and Dleorenzi, 2013](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-91)).**
+Многие исследования, описывающие сравнение между этими методами, показывают, что, несмотря на определенное соответствие, между инструментами также существуют значительные различия. **Кроме того, не существует одного метода, который был бы оптимален при любых условиях ([Soneson and Dleorenzi, 2013](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-91)).**
 
 
 ![deg1](../img/deg_methods1.png)
@@ -255,17 +257,17 @@ Many studies describing comparisons between these methods show that while there 
 ![deg1](../img/deg_methods2.png)
 
 
-**We will be using [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8) for the DE analysis, and the analysis steps with DESeq2 are shown in the flowchart below in green**. DESeq2 first normalizes the count data to account for differences in library sizes and RNA composition between samples. Then, we will use the normalized counts to make some plots for QC at the gene and sample level. The final step is to use the appropriate functions from the DESeq2 package to perform the differential expression analysis.
+**Для анализа дифференциальной экспрессии _(DE)_ мы будем использовать [DESeq2](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-014-0550-8) а этапы анализа с помощью DESeq2 показаны зеленым цветом на блок-схеме ниже.**  DESeq2 сначала нормализует числовые данные, чтобы учесть различия в размерах библиотек и составе РНК между образцами. Затем мы воспользуемся нормализованными значениями для построения некоторых графиков для контроля качества на уровне генов и образцов. Последний шаг - использование соответствующих функций из пакета DESeq2 для проведения анализа дифференциальной экспрессии.
 
 <img src="../img/deseq_workflow_full_2018.png" width="500">
 
-We will go in-depth into each of these steps in the following lessons, but additional details and helpful suggestions regarding DESeq2 can be found in the [DESeq2 vignette](http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html). As you go through this workflow and questions arise, you can reference the vignette from within RStudio:
+Мы подробно рассмотрим каждый из этих шагов в следующих уроках, но дополнительные подробности и полезные рекомендации по DESeq2 можно найти в [DESeq2 vignette].(http://bioconductor.org/packages/devel/bioc/vignettes/DESeq2/inst/doc/DESeq2.html). По мере выполнения работы и возникновения вопросов вы можете обратиться к виньетке из RStudio:
 
 ```
 vignette("DESeq2")
 ```
 
-This is very convenient, as it provides a wealth of information at your fingertips! Be sure to use this as you need during the workshop.
+Это очень удобно, так как позволяет держать под рукой огромное количество информации! Обязательно используйте ее по мере необходимости во время семинара.
 
 
 ***
