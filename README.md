@@ -23,7 +23,7 @@
 
 Ссылки на лекции:
 
-* [Click here for schedule using Salmon count matrix](./lessons/01_DGE_setup_and_overview.md)
+* [Click here for schedule using Salmon count matrix](./lessons/01_DGE_setup_and_overview.html)
 * [Click here for schedule using FeatureCounts count matrix](schedule/1.5-day.md)
 
 
