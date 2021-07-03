@@ -64,17 +64,17 @@ date: "May 12, 2017"
 Прежде чем перейти к деталям анализа, давайте начнем с запуска RStudio и создания нового проекта для нашего анализа.
 
 1. Перейдите в меню `File` и выберите `New Project`.
-2. В окне `New Project` выберите `New Directory`. Затем выберите `Empty Project`. Назовите новый каталог `DEanalysis`, а затем "Create the project as subdirectory of:" на Рабочем столе (или в выбранном вами месте).
+2. В окне `New Project` _(Новый проект)_ выберите `New Directory` _(Новая папка)_. Затем выберите `Empty Project` _(Пустой проект)_. Назовите новый каталог `DEanalysis`, а затем "Create the project as subdirectory of:" на Рабочем столе _(Desktop)_ (или в выбранном вами месте).
 3. Новый проект должен автоматически открыться в RStudio.
 
-Чтобы проверить, находитесь ли вы в правильном рабочем каталоге, используйте `getwd()`. В консоли должен появиться путь `Desktop/DEanalysis`. В рабочей директории используйте кнопку `Новая папка` в правой нижней панели, чтобы создать три новые директории: `data`, `meta` и `results`. Помните, что ключ к хорошему анализу - это систематизированность от начала до конца!
+Чтобы проверить, находитесь ли вы в правильном рабочем каталоге, используйте `getwd()`. В консоли должен появиться путь `Desktop/DEanalysis`. В рабочей директории используйте кнопку `New Directory` _(Новая папка)_ в правой нижней панели, чтобы создать три новые директории: `data`, `meta` и `results`. Помните, что ключ к хорошему анализу - это систематизированность от начала до конца!
 
-Перейдите в меню `Файл` _(`File`)_ и выберите `Новый файл` _(`New File`)_, затем выберите `Скрипт R` _(`R Script`)_. В левом верхнем углу откроется редактор скриптов. Именно здесь мы будем вводить и сохранять все команды, необходимые для данного анализа. В редакторе скриптов введите строки заголовков:
+Перейдите в меню `File` _(Файл)_ и выберите `New File` _(Новый файл)_, затем выберите `R Script` _(Скрипт R)_. В левом верхнем углу откроется редактор скриптов. Именно здесь мы будем вводить и сохранять все команды, необходимые для данного анализа. В редакторе скриптов введите строки заголовков:
 
 ```r
 ## Gene-level differential expression analysis using DESeq2
 ```
-> **NOTE:** В зависимости от настроек операционной системы редактор скриптов Rstudio может некорректно воспринимать рускоязычные символы. Нужно быть внимательным, поскольку при последующем открытии таких файлов текстовый редактор может неправильно отображать русские символы*
+> **NOTE:** В зависимости от настроек операционной системы редактор скриптов Rstudio может некорректно воспринимать рускоязычные символы. Нужно быть внимательным, поскольку при последующем открытии таких файлов текстовый редактор может неправильно отображать русский алфавит*
 
 Теперь сохраните файл под именем `de_script.R`. После завершения работы ваш рабочий каталог должен выглядеть примерно так:
 
@@ -101,7 +101,7 @@ library(DEGreport)
 
 ### Загрузка данных
 
-Для загрузки данных в нашу текущую рабочую среду мы будем использовать функцию `read.table`. Нам нужно указать путь к каждому файлу, а также указать аргументы, чтобы сообщить R, что у нас есть заголовок (`header = T`), и что первый столбец - это имена наших строк (`row.names =1`). По умолчанию функция ожидает файлы с табуляцией в качестве разделителя, что мы и имеем.
+Для загрузки данных в нашу текущую рабочую среду _(Environment)_ мы будем использовать функцию `read.table`. Нам нужно указать путь к каждому файлу, а также указать аргументы, чтобы сообщить R, что у нас есть заголовок (`header = T`), и что первый столбец - это имена наших строк (`row.names =1`). По умолчанию функция ожидает файлы с табуляцией в качестве разделителя, что мы и имеем.
 
 ```r
 ## Load in data
@@ -130,7 +130,7 @@ View(data)
 > ### Using the abundance estimates from Salmon as input to DESeq2
 > The counts used in these lessons were generated using the standard approach for RNA-seq analysis, where samples were aligned to the genome using a splice-aware aligner followed by counting. If you are using lightweight algorithms such as Salmon, Sailfish or Kallisto to generate abundance estimates, you can also use DESeq2 to perform gene-level differential expression analysis. These transcript abundance estimates, often referred to as ‘pseudocounts’, can be converted for use with DESeq2 but the setup is slightly more involved. If you are interested in knowing more about using Salmon pseudocounts for DESeq2, we have [materials linked here](https://hbctraining.github.io/DGE_workshop_salmon/lessons/01_DGE_setup_and_overview.html).
 
-## Differential gene expression analysis overview
+## Обзор анализа дифференциальной экспрессии
 
 So what does this count data actually represent? The count data used for differential expression analysis represents the number of sequence reads that originated from a particular gene. The higher the number of counts, the more reads associated with that gene, and the assumption that there was a higher level of expression of that gene in the sample.
 
