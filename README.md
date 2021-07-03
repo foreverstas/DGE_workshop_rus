@@ -23,8 +23,8 @@
 
 Ссылки на лекции:
 
-* [Click here for schedule using Salmon count matrix](lessons/01_DGE_setup_and_overview.html)
-* [Click here for schedule using FeatureCounts count matrix](lessons/01_DGE_setup_and_overview.md)
+* [Обзор и запуск анализа дифференциальной экспрессии на уровне генов](lessons/01_DGE_setup_and_overview.html)
+* [Click here for schedule using FeatureCounts count matrix](lessons/01_DGE_setup_and_overview.m)
 
 
 ### Требуемые программы
