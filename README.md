@@ -17,14 +17,14 @@
 - Визуализация паттернов экспрессии [дифференциально экспрессирующихся генов](https://ru.wikipedia.org/wiki/%D0%9A%D0%BE%D0%BB%D0%B8%D1%87%D0%B5%D1%81%D1%82%D0%B2%D0%B5%D0%BD%D0%BD%D1%8B%D0%B9_%D0%B0%D0%BD%D0%B0%D0%BB%D0%B8%D0%B7_%D1%8D%D0%BA%D1%81%D0%BF%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B8_%D0%B3%D0%B5%D0%BD%D0%BE%D0%B2)
 - Функциаланьный анализ списков генов с использованием инструментов языка программирования R
 
-> These materials are developed for a trainer-led workshop, but also amenable to self-guided learning.
+> Эти материалы разработаны для семинара с преподавателем, но могут быть использованы и для самостоятельного обучения.
 
 ### Уроки
 
 Ссылки на лекции:
 
 * [Обзор и запуск анализа дифференциальной экспрессии на уровне генов](lessons/01_DGE_setup_and_overview.html)
-* [Click here for schedule using FeatureCounts count matrix](lessons/01_DGE_setup_and_overview.m)
+* [Click here for schedule using FeatureCounts count matrix](lessons/01_DGE_setup_and_overview.html)
 
 
 ### Требуемые программы
