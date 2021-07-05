@@ -271,7 +271,7 @@ vignette("DESeq2")
 
 ------
 
-[Следующая лекция](./lessions/02_DGE_count_normalization.html)
+[Следующая лекция](lessions/02_DGE_count_normalization.html)
 
 ------
 ***
