@@ -1,96 +1,96 @@
 ---
-title: "Count normalization with DESeq2"
+title: "Нормализация числа прочтений в DESeq2"
 author: "Meeta Mistry, Radhika Khetani, Mary Piper"
 date: "April 26, 2017"
 ---
 
-Approximate time: 60 minutes
+Примерная продолжительность: 60 минут
 
-## Learning Objectives 
+## Цели обучения
 
-* Explore different types of normalization methods
-* Become familiar with the `DESeqDataSet` object 
-* Understand how to normalize counts using DESeq2
+* Изучить различные типы методов нормализации
+* Познакомиться с объектами данных `DESeqDataSet`
+* Понять, как нормализовать каунты с помощью DESeq2
 
-## Normalization
+## Нормализация
 
-The first step in the DE analysis workflow is count normalization, which is necessary to make accurate comparisons of gene expression between samples.
+Первым шагом в процедуре DE-анализа является нормализация числа прочтений, которая необходима для точного сравнения экспрессии генов между образцами.
 
 <img src="../img/deseq_workflow_normalization_2018.png" width="400">
 
-The counts of mapped reads for each gene is proportional to the expression of RNA ("interesting") in addition to many other factors ("uninteresting"). Normalization is the process of scaling raw count values to account for the "uninteresting" factors. In this way the expression levels are more comparable between and/or within samples.
+Количество картированных на геном прочтений для каждого гена _(каунтов)_ пропорционально экспрессии РНК ("интересные") в дополнение ко многим другим факторам ("неинтересные"). Нормализация - это процесс масштабирования необработанных значений подсчета для того, чтобы учесть "неинтересные" факторы. Таким образом, уровни экспрессии становятся более сопоставимыми между образцами и/или внутри образцов.
 
-The main factors often considered during normalization are:
- 
- - **Sequencing depth:** Accounting for sequencing depth is necessary for comparison of gene expression between samples. In the example below, each gene appears to have doubled in expression in *Sample A* relative to *Sample B*, however this is a consequence of *Sample A* having double the sequencing depth. 
+Основными факторами, которые часто учитываются при нормализации, являются:
+
+ - **Глубина секвенирования:** Учет глубины секвенирования необходим для сравнения экспрессии генов между образцами. В приведенном ниже примере экспрессия каждого гена в *образце А* по сравнению с *образцом В* увеличилась в два раза, однако это является следствием того, что в образце А* глубина секвенирования в два раза больше.
 
     <img src="../img/normalization_methods_depth.png" width="400">
-  
-	>***NOTE:** In the figure above, each pink and green rectangle represents a read aligned to a gene. Reads connected by dashed lines connect a read spanning an intron.*
- 
- - **Gene length:** Accounting for gene length is necessary for comparing expression between different genes within the same sample. In the example, *Gene X* and *Gene Y* have similar levels of expression, but the number of reads mapped to *Gene X* would be many more than the number mapped to *Gene Y* because *Gene X* is longer.
- 
+
+	>***NOTE:** На рисунке выше каждый розовый и зеленый прямоугольник представляет собой рид, выровненное на ген. Прямоугольники, соединенные пунктирными линиями, обозначают риды, перекрывающие стыки между эксзонами.*
+
+ - **Длина гена:** Учитывать длину гена необходимо для сравнения экспрессии разных генов в одном и том же образце. В примере *ген X* и *ген Y* имеют схожие уровни экспрессии, но количество считываний, сопоставленных с *геном X*, будет намного больше, чем с *геном Y*, поскольку *ген X* длиннее.
+
     <img src="../img/normalization_methods_length.png" width="200">
- 
- - **RNA composition:** A few highly differentially expressed genes between samples, differences in the number of genes expressed between samples, or presence of contamination can skew some types of normalization methods. Accounting for RNA composition is recommended for accurate comparison of expression between samples, and is particularly important when performing differential expression analyses [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)]. 
- 
-	In the example, if we were to divide each sample by the total number of counts to normalize, the counts would be greatly skewed by the DE gene, which takes up most of the counts for *Sample A*, but not *Sample B*. Most other genes for *Sample A* would be divided by the larger number of total counts and appear to be less expressed than those same genes in *Sample B*.  
-	
+
+ - **Состав РНК:** Небольшое количество генов с сильной дифференциальная экспрессей между образцами, различия в количестве экспрессируемых генов между образцами или присутствие контаминации могут привести к искажению некоторых методов нормализации. Для точного сравнения экспрессии между образцами рекомендуется учитывать состав РНК, что особенно важно при проведении анализа дифференциальной экспрессии [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)].
+
+	В примере, если бы мы разделили каждый образец на общее количество прочтений для нормализации, число прочтений было бы сильно искажено из-за DE-гена, на который приходится большая часть прочтений для *образца A*, но не для *образца B*. Большинство других генов для *образца А* будут разделены на более высокое число суммарных прочтений и окажутся менее экспрессированными, чем те же гены в *образце В*.
+
     <img src="../img/normalization_methods_composition.png" width="400">
-    
-***While normalization is essential for differential expression analyses, it is also necessary for exploratory data analysis, visualization of data, and whenever you are exploring or comparing counts between or within samples.***
- 
-### Common normalization methods
 
-Several common normalization methods exist to account for these differences:
-	
-| Normalization method | Description | Accounted factors | Recommendations for use |
+***Хотя нормализация важна для анализа дифференциальной экспрессии, она также необходима для разведочного анализа, визуализации данных и в других случаях, когда вы исследуете или сравниваете прочтения между или внутри образцами.***
+
+### Общие методы нормализации
+
+Для учета указанных различий существует несколько распространенных методов нормализации:
+
+| Метод нормализации | Описание | Учитываемый фактор | Рекоммендации по использованию |
 | ---- | ---- | ---- | ---- |
-| **CPM** (counts per million) | counts scaled by total number of reads | sequencing depth | gene count comparisons between replicates of the same samplegroup; **NOT for within sample comparisons or DE analysis**  |
-| **TPM** (transcripts per kilobase million) | counts per length of transcript (kb) per million reads mapped | sequencing depth and gene length | gene count comparisons within a sample or between samples of the same sample group; **NOT for DE analysis** |
-| **RPKM/FPKM** (reads/fragments per kilobase of exon per million reads/fragments mapped) | similar to TPM | sequencing depth and gene length | gene count comparisons between genes within a sample; **NOT for between sample comparisons or DE analysis** |
-| DESeq2's **median of ratios** [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)] | counts divided by sample-specific size factors determined by median ratio of gene counts relative to geometric mean per gene | sequencing depth and RNA composition | gene count comparisons between samples and for **DE analysis**; **NOT for within sample comparisons** |
-| EdgeR's **trimmed mean of M values (TMM)** [[2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)] | uses a weighted trimmed mean of the log expression ratios between samples | sequencing depth, RNA composition, and gene length | gene count comparisons between and within samples and for **DE analysis** |
+| **CPM** (число прочтений на миллион) | число прочтений для гена поделенное на общее число ридов | глубина секвенирования | сравнение числа прочтений для гена между повторами из одной и той же группы образцов; **НЕ для сравнения внутри образца или DE-анализа**  |
+| **TPM** (Число транскриптов на килобазу на миллион) | Число прочтений, деленое на длинну транскрипта в килобазах на миллион прокартированных ридов | глубина секвенирования и число ридов | Сравнение числа прочтений для генов внутри образца или между образцами из одной группы; **Не для DE-анализа** |
+| **RPKM/FPKM** (риды/фрагменты (риды, секвенированные с двух сторон) на килобазу экзона на миллион прокартированных ридов/фрагментов) | То же, что и TPM | глубина секвенирования и длина гена | сравнение количества прочтений между генами внутри образца; **Не для сравнения между образцами или DE-анализа** |
+| **Медиана отношений** из пакета DESeq2's [[1](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-10-r106)] | Число прочтений, деленое на специфичный для каждого образца размерный фактор _(size factor)_, который определяется как вычисланная по всем генам в образце медиана отношения среднего числа прочтений гена в образце к среднему геометрическому числу прочтений этого гена между образцами | глубина секвенирования и состав РНК | сравнение числа прочтений гена между образцами и **DE-анализ**; **Не для сравнения генов внутри образца** |
+| **Усеченное среднее М-значений (TMM)** из пакета EdgeR [[2](https://genomebiology.biomedcentral.com/articles/10.1186/gb-2010-11-3-r25)] | использует взвешенные усеченные средние логарифма отношения экспрессии между образцами | глубина секвенирования, состав РНК и длина гена | сравнение числа прочтений внутри и между образцами, а также **DE-анализ** |
 
 
-### RPKM/FPKM (not recommended)
-While TPM and RPKM/FPKM normalization methods both account for sequencing depth and gene length, RPKM/FPKM are not recommended. **The reason  is that the normalized count values output by the RPKM/FPKM method are not comparable between samples.** 
+### RPKM/FPKM (не рекомендуется)
+Хотя методы нормализации TPM и RPKM/FPKM учитывают глубину секвенирования и длину гена, RPKM/FPKM не рекомендуется использовать. **Причина в том, что нормализованные значения прочтений, полученные методом RPKM/FPKM, несопоставимы между образцами.**
 
-Using RPKM/FPKM normalization, the total number of RPKM/FPKM normalized counts for each sample will be different. Therefore, you cannot compare the normalized counts for each gene equally between samples. 
+При использовании нормализации RPKM/FPKM общее количество нормализованных прочтений RPKM/FPKM для каждого образца будет разным. Поэтому вы не можете в равной степени сравнивать нормализованные прочтения для каждого гена в  между образцами.
 
 **RPKM-normalized counts table**
 
-| gene | sampleA | sampleB |
+| gene | образецA | образецB |
 | ----- |:-----:|:-----:|
 | XCR1 | 5.5 | 5.5 |
 | WASHC1 | 73.4 | 21.8 |
 | ... | ... | ... |
-|Total RPKM-normalized counts | 1,000,000 | 1,500,000 |
+|Общая количество RPKM-нормализованных прочтений | 1,000,000 | 1,500,000 |
 
-For example, in the table above, SampleA has a greater proportion of counts associated with XCR1 (5.5/1,000,000) than does sampleB (5.5/1,500,000) even though the RPKM count values are the same. Therefore, we cannot directly compare the counts for XCR1 (or any other gene) between sampleA and sampleB because the total number of normalized counts are different between samples. 
+Например, в приведенной выше таблице в образцеА имеется более высокая доля прочтений, связанных с XCR1 (5,5/1 000 000), чем в образцеВ (5,5/1 500 000), несмотря на то, что величины прочтений RPKM одинаковы. Поэтому мы не можем напрямую сравнить количество прочтений для XCR1 (или любого другого гена) между образцами А и В, так как общее количество нормализованных прочтений в разных образцах разное.
 
-### DESeq2-normalized counts: Median of ratios method
-Since tools for differential expression analysis are comparing the counts between sample groups for the same gene, gene length does not need to be accounted for by the tool. However, **sequencing depth** and **RNA composition** do need to be taken into account.
+### Нормализованные по DESeq2 прочтения: метод медианы отношения
+Поскольку инструменты для дифференциального анализа экспрессии сравнивают каунты между группами образцов для одного и того же гена, длина гена не должна учитываться инструментом. Однако **глубина секвенирования** и **состав РНК** должны быть приняты во внимание.
 
-To normalize for sequencing depth and RNA composition, DESeq2 uses the median of ratios method. On the user-end there is only one step, but on the back-end there are multiple steps involved, as described below.
+Для нормализации глубины секвенирования и состава РНК в DESeq2 используется метод медианы отношений. С точки зрения пользователя это только одна команда, но на програмном уровне это несколько шагов, описанных ниже.
 
-> **NOTE:**  The steps below describe in detail some of the steps performed by DESeq2 when you run a single function to get DE genes. Basically, for a typical RNA-seq analysis, **you would not run these steps individually**.
+> **NOTE:**  Ниже подробно описаны некоторые шаги, выполняемые DESeq2 при запуске одной функции для получения DE-генов. В принципе, для типичного анализа РНК-секвенирования **вы не будете выполнять эти шаги по отдельности.**.
 
-**Step 1: creates a pseudo-reference sample (row-wise geometric mean)**
+**Шаг 1: создание псевдореференcной выборки (среднее геометрическое значение строк)**
 
-For each gene, a pseudo-reference sample is created that is equal to the geometric mean across all samples.
+Для каждого гена (то есть каджой строки) создается псевдореференсный _(pseudo-reference)_ образец, равный среднему геометрическому по всем образцам.
 
-| gene | sampleA | sampleB | pseudo-reference sample  |
+| ген | образецА | образецB | псевдорефенсный образец  |
 | ----- |:-----:|:-----:|:-----:|
 | EF2A | 1489 | 906 | sqrt(1489 * 906) = **1161.5** |
 | ABCD1 | 22 | 13 | sqrt(22 * 13) = **17.7** |
 | ... | ... | ... | ... |
 
-**Step 2: calculates ratio of each sample to the reference**
+**Шаг 2: вычисление отношения каждого образца к референсу**
 
-For every gene in a sample, the ratios (sample/ref) are calculated (as shown below). This is performed for each sample in the dataset. Since the majority of genes are not differentially expressed, the majority of genes in each sample should have similar ratios within the sample.
+Для каждого гена в образце рассчитываются соотношения (образец/референс) (как показано ниже). Это выполняется для каждого образца в наборе данных. Поскольку большинство генов не являются дифференциально экспрессируемыми, большинство генов в каждом образце должны иметь схожие соотношения внутри образца.
 
-| gene | sampleA | sampleB | pseudo-reference sample  | ratio of sampleA/ref | ratio of sampleB/ref |
+| ген | образецА | образецB | псевдореференсный образец  | отношение образецA/псевдореференс | отношение образецВ/псевдореференс |
 | ----- |:-----:|:-----:|:-----:| :-----: | :-----: |
 | EF2A | 1489 | 906 | 1161.5 | 1489/1161.5 = **1.28** | 906/1161.5 = **0.78** |
 | ABCD1 | 22 | 13 | 16.9 | 22/16.9 = **1.30** | 13/16.9 = **0.77** |
@@ -99,151 +99,151 @@ For every gene in a sample, the ratios (sample/ref) are calculated (as shown bel
 | MOV10 | 521 | 1196 | 883.7 | 521/883.7 = **0.590** | 1196/883.7 = **1.35** |
 | ... | ... | ... | ... |
 
-**Step 3: calculate the normalization factor for each sample (size factor)**
+**Шаг 3: вычисление коэффициента нормализации для каждого образца ( размерный фактор).**
 
-The median value (column-wise for the above table) of all ratios for a given sample is taken as the normalization factor (size factor) for that sample, as calculated below. Notice that the differentially expressed genes should not affect the median value:
+Медианное значение всех отношений для данного образца (медианное значение столбца в таблице выше) берется в качестве коэффициента нормализации (размерного фактора) для этого образца, как рассчитано ниже. Обратите внимание, что дифференциально экспрессированные гены не должны влиять на медианное значение:
 
 `normalization_factor_sampleA <- median(c(1.28, 1.3, 1.39, 1.35, 0.59))`
 
 `normalization_factor_sampleB <- median(c(0.78, 0.77, 0.72, 0.74, 1.35))`
- 
-The figure below illustrates the median value for the distribution of all gene ratios for a single sample (frequency is on the y-axis).
+
+На рисунке ниже показано медианное значение для распределения соотношений по всем генам внутри одного образца (частота находится на оси y).
 
 <img src="../img/deseq_median_of_ratios.png" width="400">
 
-The median of ratios method makes the assumption that not ALL genes are differentially expressed; therefore, the normalization factors should account for sequencing depth and RNA composition of the sample (large outlier genes will not represent the median ratio values). **This method is robust to imbalance in up-/down-regulation and large numbers of differentially expressed genes.**
+Метод медианы соотношений предполагает, что не ВСЕ гены дифференциально экспрессируются, поэтому коэффициенты нормализации должны учитывать глубину секвенирования и состав РНК образца (большие выпадающие гены не будут представлять медианные значения соотношений). **Этот метод устойчив к дисбалансу в up-/down-регуляции и большому количеству дифференциально экспрессируемых генов.**
 
-> Usually these size factors are around 1, if you see large variations between samples it is important to take note since it might indicate the presence of extreme outliers.
+> Обычно эти размерные факторы находятся около 1, если вы видите большие различия между образцами, важно обратить на это внимание, так как это может указывать на наличие экстремальных выбросов.
 
-**Step 4: calculate the normalized count values using the normalization factor**
+**Шаг 4: вычисление нормализованных каунтов с использованием коэффициента нормализации**
 
-This is performed by dividing each raw count value in a given sample by that sample's normalization factor to generate normalized count values. This is performed for all count values (every gene in every sample). For example, if the median ratio for SampleA was 1.3 and the median ratio for SampleB was 0.77, you could calculate normalized counts as follows:
+Для получения нормализованных каунтов, каждое необработанное количество прочтений в данном образце делится на коэффициент нормализации для этого образца. Это выполняется для каждого гена во всех образцах. Например, если медианный фактор для образцаА равен 1,3, а медианный фактор для образцаВ равен 0,77, то нормализованные значения можно рассчитать следующим образом:
 
 SampleA median ratio = 1.3
 
 SampleB median ratio = 0.77
 
-**Raw Counts**
+**Необработанные _(raw)_ каунты**
 
-| gene | sampleA | sampleB |  
+| ген | образецA | образецB |  
 | ----- |:-----:|:-----:|
-| EF2A | 1489 | 906 | 
-| ABCD1 | 22 | 13 | 
-| ... | ... | ... | 
+| EF2A | 1489 | 906 |
+| ABCD1 | 22 | 13 |
+| ... | ... | ... |
 
-**Normalized Counts**
+**Нормализованные каунты**
 
-| gene | sampleA | sampleB |
+| ген | образецA | образецB |
 | ----- |:-----:|:-----:|
-| EF2A | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** | 
-| ABCD1 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** | 
-| ... | ... | ... | 
+| EF2A | 1489 / 1.3 = **1145.39** | 906 / 0.77 = **1176.62** |
+| ABCD1 | 22 / 1.3 = **16.92** | 13 / 0.77 = **16.88** |
+| ... | ... | ... |
 
-> Please note that normalized count values are not whole numbers.
+> Обратите внимание, что нормализованные каунты не являются целыми числами.
 
 ***
-**Exercise**
+**Упражнение**
 
-Determine the normalized counts for your gene of interest, PD1, given the raw counts and size factors below. 
+Определите нормализованные каунты для гена PD1, учитывая приведенные ниже необработанные каунты и размерные факторы.
 
-NOTE: You will need to run the code below to generate the raw counts dataframe (PD1) and the size factor vector (size_factors), then use these objects to determine the normalized counts values:
+ПРИМЕЧАНИЕ: Вам нужно будет выполнить приведенный ниже код для создания таблицы данных с необработанными каунтами (PD1) и вектора размерных факторов (size_factors), а затем использовать эти объекты для определения значений нормализованных каунтов:
 
 ```r
 
-# Raw counts for PD1
+# Необработанные каунты для PD1
 PD1 <- c(21, 58, 17, 97, 83, 10)
 names(PD1) <- paste0("Sample", 1:6)
 PD1 <- data.frame(PD1)
 PD1 <- t(PD1)
 
-# Size factors for each sample
+# Размерные факторы для каждого образца
 size_factors <- c(1.32, 0.70, 1.04, 1.27, 1.11, 0.85)
 
 ```
 
 ***
 
-## Count normalization of Mov10 dataset using DESeq2
+## Нормализация каунтов для датасета Mov10 с использованием DESeq2
 
-Now that we know the theory of count normalization, we will normalize the counts for the Mov10 dataset using DESeq2. This requires a few steps:
+Теперь, когда мы знаем теорию нормализации числа прочтений, мы нормализуем каунты для набора данных Mov10 с помощью DESeq2. Для этого необходимо выполнить несколько шагов:
 
-1. Ensure the row names of the metadata dataframe are present and in the same order as the column names of the counts dataframe.
-2. Create a `DESeqDataSet` object
-3. Generate the normalized counts
+1. Убедитесь, что имена строк таблицы метаданных присутствуют и расположены в том же порядке, что и имена столбцов таблицы числа прочтений.
+2. Создайте объект `DESeqDataSet`
+3. Сгенерируйте нормализованные каунты
 
-### 1. Match the metadata and counts data
+### 1. Соответствие метаданных и данных числа прочтений
 
-We should always make sure that we have sample names that match between the two files, and that the samples are in the right order. DESeq2 will output an error if this is not the case.
+Мы всегда должны следить за тем, чтобы имена образцов совпадали в двух файлах и чтобы образцы располагались в правильном порядке. Если это не так, DESeq2 выдаст ошибку.
 
 ```r
-### Check that sample names match in both files
+### Проверяем, что названия образцов совпадают в обоих файлах
 all(colnames(data) %in% rownames(meta))
 all(colnames(data) == rownames(meta))
 ```
 
-If your data did not match, you could use the `match()` function to rearrange them to be matching.
+Если ваши данные не совпали, вы можете использовать функцию `match()`, чтобы переставить их так, чтобы они совпали.
 
 ***
 
-**Exercise**	
+**Упражнение**
 
-Suppose we had sample names matching in the counts matrix and metadata file, but they were out of order. Write the line(s) of code required to create a new matrix with columns ordered such that they were identical to the row names of the metadata.
+Предположим, что в матрице числа прочтений и файле метаданных имена образцов совпадают, но они расположены не по порядку. Напишите строку(и) кода, необходимую для создания новой матрицы, столбцы которой упорядочены таким образом, чтобы они совпадали с именами строк метаданных.
 
-*** 
+***
 
 ### 2. Create DESEq2 object
 
-Bioconductor software packages often define and use a custom class within R for storing data (input data, intermediate data and also results). These custom data structures are similar to `lists` in that they can contain multiple different data types/structures within them. But, unlike lists they have pre-specified `data slots`, which hold specific types/classes of data. The data stored in these pre-specified slots can be accessed by using specific package-defined functions.
+Программные пакеты Bioconductor часто определяют и используют пользовательский класс в R для хранения данных (входных данных, промежуточных данных, а также результатов). Эти пользовательские структуры данных похожи на `списки` тем, что они могут содержать несколько различных типов/структур данных. Но, в отличие от списков, они имеют заранее определенные `слоты данных`, которые содержат конкретные типы/классы данных. Доступ к данным, хранящимся в этих заранее определенных слотах, можно получить с помощью специальных функций, определенных пакетом.
 
-Let's start by creating the `DESeqDataSet` object and then we can talk a bit more about what is stored inside it. To create the object we will need the **count matrix** and the **metadata** table as input. We will also need to specify a **design formula**. The design formula specifies the column(s) in the metadata table and how they should be used in the analysis. For our dataset we only have one column we are interested in, that is `~sampletype`. This column has three factor levels, which tells DESeq2 that for each gene we want to evaluate gene expression change with respect to these different levels.
+Давайте начнем с создания объекта `DESeqDataSet`, а затем поговорим немного подробнее о том, что хранится внутри него. Для создания объекта нам понадобятся матрица **count** и таблица **metadata** в качестве исходных данных. Нам также нужно будет указать **формулу дизайна**. Формула дизайна определяет столбец (столбцы) в таблице метаданных и то, как они должны использоваться в анализе. Для нашего набора данных у нас есть только один интересующий нас столбец, это `~sampletype`. Этот столбец имеет три уровня факторов, что говорит DESeq2, что для каждого гена мы хотим оценить изменение экспрессии генов относительно этих разных уровней.
 
 ```r
-## Create DESeq2Dataset object
+## Создаем объект DESeq2Dataset
 dds <- DESeqDataSetFromMatrix(countData = data, colData = meta, design = ~ sampletype)
 ```
 
 ![deseq1](../img/deseq_obj1.png)
 
 
-You can use DESeq-specific functions to access the different slots and retrieve information, if you wish. For example, suppose we wanted the original count matrix we would use `counts()` (*Note: we nested it within the `View()` function so that rather than getting printed in the console we can see it in the script editor*) :
+При желании вы можете использовать специльно созданные в DESeq функции для доступа к различным слотам и получения информации. Например, если бы мы хотели получить исходную матрицу числа прочтений, мы бы использовали функцию `counts()` (*Примечание: мы вложили ее в функцию `View()`, так что вместо вывода в консоль мы можем увидеть ее в редакторе скриптов*):
 
 ```r
 View(counts(dds))
 ```
 
-As we go through the workflow we will use the relevant functions to check what information gets stored inside our object.
+По мере прохождения рабочего процесса мы будем использовать соответствующие функции для проверки того, какая информация хранится внутри нашего объекта.
 
-### 3. Generate the Mov10 normalized counts
+### 3. Генерация нормализованных каунтов для the Mov10
 
-The next step is to normalize the count data in order to be able to make fair gene comparisons between samples.
+Следующим шагом является нормализация данных о числе прочтений, чтобы можно было провести справедливое сравнение генов между образцами.
 
 <img src="../img/deseq_workflow_normalization_2018.png" width="400">
 
-To perform the **median of ratios method** of normalization, DESeq2 has a single `estimateSizeFactors()` function that will generate size factors for us. We will use the function in the example below, but **in a typical RNA-seq analysis this step is automatically performed by the `DESeq()` function**, which we will see later. 
+Для выполнения нормализации **методом медианы отношений** в DESeq2 есть единственная функция `estimateSizeFactors()`, которая генерирует для нас размерные факторы. Мы будем использовать эту функцию в приведенном ниже примере, но **в типичном анализе RNA-seq этот шаг автоматически выполняется функцией `DESeq()`**, которую мы рассмотрим позже.
 
 ```r
 dds <- estimateSizeFactors(dds)
 ```
 
-By assigning the results back to the `dds` object we are filling in the slots of the `DESeqDataSet` object with the appropriate information. We can take a look at the normalization factor applied to each sample using:
+Присваивая результаты обратно объекту `dds`, мы заполняем слоты объекта `DESeqDataSet` соответствующей информацией. Мы можем посмотреть на коэффициент нормализации, примененный к каждому образцу, используя:
 
 ```r
 sizeFactors(dds)
 ```
 
-Now, to retrieve the normalized counts matrix from `dds`, we use the `counts()` function and add the argument `normalized=TRUE`.
+Теперь, чтобы получить нормализованную матрицу подсчетов из `dds`, мы используем функцию `counts()` и добавим аргумент `normalized=TRUE`.
 
 ```r
 normalized_counts <- counts(dds, normalized=TRUE)
 ```
 
-We can save this normalized data matrix to file for later use:
+Мы можем сохранить эту нормализованную матрицу данных в файл для последующего использования:
 
 ```r
 write.table(normalized_counts, file="data/normalized_counts.txt", sep="\t", quote=F, col.names=NA)
 ```
 
-> **NOTE:** DESeq2 doesn't actually use normalized counts, rather it uses the raw counts and models the normalization inside the Generalized Linear Model (GLM). These normalized counts will be useful for downstream visualization of results, but cannot be used as input to DESeq2 or any other tools that peform differential expression analysis which use the negative binomial model.
+> **NOTE:** DESeq2 на самом деле не использует нормализованные каунты, вместо этого он использует необработанные каунты и моделирует нормализацию внутри обобщенной линейной модели (GLM). Эти нормализованные подсчеты будут полезны для последующей визуализации результатов, но не могут быть использованы в качестве входных данных для DESeq2 или любых других инструментов, выполняющих анализ дифференциальной экспрессии, которые используют отрицательную биномиальную модель.
 
 ***
 *This lesson has been developed by members of the teaching team at the [Harvard Chan Bioinformatics Core (HBC)](http://bioinformatics.sph.harvard.edu/). These are open access materials distributed under the terms of the [Creative Commons Attribution license](https://creativecommons.org/licenses/by/4.0/) (CC BY 4.0), which permits unrestricted use, distribution, and reproduction in any medium, provided the original author and source are credited.*

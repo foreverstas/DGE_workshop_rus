@@ -1,10 +1,10 @@
 **Это вольный перевод семинара [DGE_workshop](https://github.com/hbctraining/DGE_workshop). В процессе перевода никаких изменений в содержание курса не вводилось. К ключевым терминам прикреплены ссылки на интернет ресурсы с пояснениями**
 
-# Differential gene expression workshop
+# Семинар по дифференциальной экспрессии генов
 
-| Audience | Computational skills required| Duration |
+| Слушатели | Требуемые навыки программирования| Продолжительность |
 :----------|:----------|:----------|
-| Biologists | [Introduction to R](https://hbctraining.github.io/Intro-to-R/) | 1.5-day workshop (~10 hours of trainer-led time)|
+| Биологи | [Введение в R](https://hbctraining.github.io/Intro-to-R/) | 1.5 дневный воркшоп (~10 часов под руководством преподавателя)|
 
 ### Описание
 
@@ -24,7 +24,7 @@
 Ссылки на лекции:
 
 * [Обзор и запуск анализа дифференциальной экспрессии на уровне генов](lessons/01_DGE_setup_and_overview.html)
-* [Click here for schedule using FeatureCounts count matrix](lessons/01_DGE_setup_and_overview.html)
+* [Нормализация числа прочтений в DEseq2](lessons/02_DGE_count_normalization.html)
 
 
 ### Требуемые программы
