@@ -271,11 +271,9 @@ vignette("DESeq2")
 
 ------
 
-<<<<<<< Updated upstream
-[Следующая лекция](lessions/02_DGE_count_normalization.html)
-=======
-[Следующая лекция](lessons/02_DGE_count_normalization.html)
->>>>>>> Stashed changes
+
+[Следующая лекция](02_DGE_count_normalization.html)
+
 
 ------
 ***
